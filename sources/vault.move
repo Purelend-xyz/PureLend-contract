@@ -64,6 +64,18 @@ module lending::vault {
         coin::mint_and_transfer<CCoin<CoinType>>(&mut pool.treasury_cap, ouput_amt, tx_context::sender(ctx), ctx);
     }
 
+    public entry fun withdraw<CoinType>(pool: &mut Pool<CoinType>,
+                                        coin: Coin<CCoin<CoinType>>,
+                                        ctx: &mut TxContext) {
+        let input = coin::into_balance(coin);
+        let input_amt = balance::value(&input);
+        coin::burn<CCoin<CoinType>>(&mut pool.treasury_cap, coin);
+
+        let ouput_amt = input_amt * 100 / pool.exchange_rate ;
+        let output_coin = coin::from_balance(balance::split(&mut pool.token, ouput_amt), ctx);
+        transfer::public_transfer(output_coin, tx_context::sender(ctx));
+    }
+
     public entry fun transfer<CoinType>(c: coin::Coin<CCoin<CoinType>>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
